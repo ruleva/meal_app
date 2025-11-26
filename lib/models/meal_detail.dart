@@ -4,7 +4,7 @@ class MealDetail {
   final String thumbnail;
   final String instructions;
   final String? youtubeUrl;
-  final List<Map<String, String>> ingredients; // [{ingredient: "", measure: ""}, ...]
+  final List<Map<String, String>> ingredients; 
 
   MealDetail({
     required this.id,

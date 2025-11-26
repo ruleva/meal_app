@@ -33,7 +33,7 @@ class _CategoriesScreenState extends State<CategoriesScreen> {
         ),
       );
     } catch (_) {
-      // нормално е нешто да пукне, барем покажи Snackbar
+
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Не успеа random рецепт.')),

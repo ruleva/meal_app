@@ -68,8 +68,7 @@ class _MealsByCategoryScreenState extends State<MealsByCategoryScreen> {
                   _allMeals = snapshot.data ?? [];
                 }
 
-                // Пошто filter.php?c= враќа по категорија,
-                // за search ќе филтрираш локално по име.
+                
                 final filtered = _allMeals.where((m) {
                   return m.name.toLowerCase().contains(_search);
                 }).toList();
