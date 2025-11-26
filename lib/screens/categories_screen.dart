@@ -1,0 +1,117 @@
+import 'package:flutter/material.dart';
+import '../models/category.dart';
+import '../services/meal_api_service.dart';
+import '../widgets/category_card.dart';
+import 'meals_by_category_screen.dart';
+import 'meal_detail_screen.dart';
+
+class CategoriesScreen extends StatefulWidget {
+  const CategoriesScreen({super.key});
+
+  @override
+  State<CategoriesScreen> createState() => _CategoriesScreenState();
+}
+
+class _CategoriesScreenState extends State<CategoriesScreen> {
+  late Future<List<Category>> _futureCategories;
+  String _search = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _futureCategories = MealApiService.getCategories();
+  }
+
+  void _openRandomMeal() async {
+    try {
+      final randomMeal = await MealApiService.getRandomMeal();
+      if (!mounted) return;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => MealDetailScreen(mealId: randomMeal.id),
+        ),
+      );
+    } catch (_) {
+      // нормално е нешто да пукне, барем покажи Snackbar
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Не успеа random рецепт.')),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Категории'),
+        actions: [
+          IconButton(
+            onPressed: _openRandomMeal,
+            icon: const Icon(Icons.shuffle),
+            tooltip: 'Random рецепт',
+          ),
+        ],
+      ),
+      body: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: TextField(
+              decoration: const InputDecoration(
+                prefixIcon: Icon(Icons.search),
+                hintText: 'Пребарај категорија...',
+                border: OutlineInputBorder(),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _search = value.toLowerCase();
+                });
+              },
+            ),
+          ),
+          Expanded(
+            child: FutureBuilder<List<Category>>(
+              future: _futureCategories,
+              builder: (context, snapshot) {
+                if (snapshot.connectionState == ConnectionState.waiting) {
+                  return const Center(child: CircularProgressIndicator());
+                } else if (snapshot.hasError) {
+                  return Center(
+                    child: Text('Грешка: ${snapshot.error}'),
+                  );
+                }
+
+                final categories = snapshot.data ?? [];
+                final filtered = categories.where((c) {
+                  return c.name.toLowerCase().contains(_search);
+                }).toList();
+
+                return ListView.builder(
+                  itemCount: filtered.length,
+                  itemBuilder: (context, index) {
+                    final category = filtered[index];
+                    return CategoryCard(
+                      category: category,
+                      onTap: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => MealsByCategoryScreen(
+                              categoryName: category.name,
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
